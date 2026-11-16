@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>استبيان المجمع الرياضي الشامل</title>
+
+    <!-- Thamanyah / IBM Plex Sans Arabic Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=ZJuFnw85kUwPWLz-wD1giIM_0Ptsu5DEswxPqjdAwRQqwtDgAYp8u6UhfA8lLut0shIi-lrUdKp39WdaoHmvSjE3JHo4ol6r7vuzt4Br0pV6TEEnbS2ewS9XjIerdJEZp4u5J3tqBZclV2WvkslMFE6vyYspyIAKizV4NmzzQ7v79_0Rq0S18OEsyKRdQhPXZzpkI2lvr9A5ZnjDuOSV-Tx-aWp2MP7MdYuIwCpbIZkAQmdKTUh-W8sPSrcuT7qVxz6--e0chaBnYLTR2zuooLt1g8Q2d1wn0LFjMNpfo6S08WF-K4d75CvVt978aX_nPkCRjWJJ6qyes_ZkSnRUyA" charset="UTF-8"></script><script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        * {
+            font-family: 'Thamanyah sans', 'Thamanyah', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #FFFFFF;
+            color: #18181B;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            touch-action: manipulation;
+        }
+
+        #welcomeScreen {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background-color: #00A3AD;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            text-align: center;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+
+        .carousel-stage-container {
+            perspective: 1000px;
+            position: relative;
+            width: 100%;
+            min-height: 560px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: visible;
+        }
+
+        .carousel-track {
+            position: relative;
+            width: 100%;
+            height: 540px;
+            transform-style: preserve-3d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: pan-y;
+            user-select: none;
+        }
+
+        .flashcard-item {
+            position: absolute;
+            width: 92%;
+            max-width: 450px;
+            height: 525px;
+            border-radius: 36px;
+            transform-style: preserve-3d;
+            transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease;
+            will-change: transform, opacity;
+            cursor: pointer;
+            overflow: hidden !important;
+        }
+
+        /* Solid 6-color cycling palette matching the exact reference */
+        .card-theme-0 { background-color: #5A7EA8; color: #FFF; }
+        .card-theme-1 { background-color: #F17A17; color: #FFF; }
+        .card-theme-2 { background-color: #48A895; color: #FFF; }
+        .card-theme-3 { background-color: #9EC723; color: #18181B; }
+        .card-theme-4 { background-color: #C81055; color: #FFF; }
+        .card-theme-5 { background-color: #F5C400; color: #18181B; }
+
+        @media (max-width: 640px) {
+            .carousel-stage-container { min-height: 510px; }
+            .carousel-track { height: 495px; }
+            .flashcard-item {
+                width: 95%;
+                height: 485px;
+                border-radius: 28px;
+            }
+            .flashcard-item.is-prev {
+                transform: translateX(42vw) scale(0.82) rotateY(-10deg) translateZ(-40px) !important;
+            }
+            .flashcard-item.is-next {
+                transform: translateX(-42vw) scale(0.82) rotateY(10deg) translateZ(-40px) !important;
+            }
+        }
+
+        .flashcard-item.is-active {
+            transform: translateX(0) scale(1) translateZ(0);
+            opacity: 1;
+            z-index: 30;
+            cursor: default;
+            pointer-events: auto !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+        }
+
+        .flashcard-item.is-prev {
+            transform: translateX(min(55vw, 300px)) scale(0.85) rotateY(-12deg) translateZ(-50px);
+            opacity: 0.35;
+            z-index: 20;
+            pointer-events: auto !important;
+        }
+
+        .flashcard-item.is-next {
+            transform: translateX(max(-55vw, -300px)) scale(0.85) rotateY(12deg) translateZ(-50px);
+            opacity: 0.35;
+            z-index: 20;
+            pointer-events: auto !important;
+        }
+
+        .flashcard-item.is-far-prev,
+        .flashcard-item.is-far-next {
+            opacity: 0 !important;
+            z-index: 1 !important;
+            pointer-events: none !important;
+            visibility: hidden !important;
+            transform: scale(0.5) translateZ(-200px) !important;
+        }
+
+        .flipper-box {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: inherit;
+            transform-style: preserve-3d;
+        }
+
+        .card-surface {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: inherit;
+            padding: 22px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .options-scroll-area {
+            overflow-y: auto;
+            max-height: 270px;
+            padding-left: 4px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+        }
+
+        .options-scroll-area::-webkit-scrollbar {
+            width: 5px;
+        }
+        .options-scroll-area::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 9999px;
+        }
+
+        .pebble-option {
+            background: rgba(255, 255, 255, 0.22);
+            border: 2px solid transparent;
+            border-radius: 16px;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            width: 100%;
+            text-align: right;
+        }
+
+        .card-theme-1 .pebble-option,
+        .card-theme-3 .pebble-option,
+        .card-theme-5 .pebble-option {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        .pebble-option:hover,
+        .pebble-option.selected {
+            background: #FFFFFF !important;
+            color: #18181B !important;
+            border-color: #18181B !important;
+            font-weight: 700;
+        }
+
+        .btn-solid-dark {
+            background-color: #18181B;
+            color: #FFFFFF;
+            border-radius: 9999px;
+            font-weight: 700;
+            transition: all 0.15s ease;
+        }
+
+        .btn-solid-dark:active {
+            transform: scale(0.98);
+        }
+
+        .btn-solid-light {
+            background-color: #FFFFFF;
+            color: #18181B;
+            border-radius: 9999px;
+            font-weight: 700;
+        }
+
+        .progress-track-light {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 9999px;
+        }
+
+        .progress-fill-dark {
+            background: #18181B;
+            border-radius: 9999px;
+            transition: width 0.25s ease-out;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col min-h-screen">
+
+    <!-- Welcome Screen -->
+    <div id="welcomeScreen">
+        <div class="max-w-md space-y-6">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-bold text-white mb-3">أهلاً بك</h1>
+                <p class="text-white/95 text-base md:text-lg font-medium leading-relaxed">
+                    شارك معنا في استبيان تصميم المجمع الرياضي الشامل للأشخاص ذوي الإعاقة، رأيك يساهم في بناء بيئة رياضية أكثر استقلالية وشمولاً.
+                </p>
+            </div>
+            <div class="pt-4">
+                <button id="startBtn"
+                    class="bg-white text-black font-bold w-full py-4 px-8 text-lg rounded-full shadow-lg hover:bg-gray-100 transition cursor-pointer">
+                    ابدأ الاستبيان
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header
+        class="w-full py-4 px-4 md:px-10 flex items-center justify-between z-20 border-b border-gray-100 bg-white sticky top-0">
+        <div class="flex items-center gap-3">
+            <div
+                class="w-10 h-10 rounded-2xl bg-[#00A3AD] text-white flex items-center justify-center text-base font-bold shadow-sm">
+                <i class="fa-solid fa-medal"></i>
+            </div>
+            <div>
+                <h1 id="app-title" class="text-base md:text-xl font-bold text-black">استبيان المجمع الرياضي الشامل</h1>
+            </div>
+        </div>
+        <button onclick="toggleAdminView()" id="admin-toggle-btn"
+            class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 px-3.5 py-2 rounded-full font-bold transition flex items-center gap-1.5">
+            <i class="fa-solid fa-lock text-[10px]"></i>
+            <span>لوحة المشرف</span>
+        </button>
+    </header>
+
+    <!-- Main Stage (Survey View) -->
+    <main class="flex-grow container mx-auto px-3 py-4 max-w-3xl flex flex-col justify-center z-10" id="survey-view">
+
+        <!-- Progress -->
+        <div class="max-w-md mx-auto w-full mb-3 space-y-2">
+            <div class="flex items-center justify-between px-1 text-xs font-bold text-black">
+                <div class="flex items-center gap-2">
+                    <span id="card-counter-badge"
+                        class="bg-black text-white px-3 py-1 rounded-full text-xs font-bold shadow-sm">
+                        البطاقة 1 من 25
+                    </span>
+                    <span id="respondent-header-name" class="text-xs text-gray-700 font-bold"></span>
+                </div>
+                <button onclick="resetAllCards()"
+                    class="hover:text-red-600 flex items-center gap-1 text-xs transition font-bold text-gray-600">
+                    <i class="fa-solid fa-rotate-left text-[10px]"></i>
+                    <span>إعادة</span>
+                </button>
+            </div>
+            <div class="w-full progress-track-light h-2.5 p-0.5 overflow-hidden">
+                <div id="carousel-progress-bar" class="progress-fill-dark h-full" style="width: 4%;"></div>
+            </div>
+        </div>
+
+        <!-- Carousel -->
+        <div class="carousel-stage-container">
+            <div class="carousel-track" id="carousel-track">
+                <!-- Cards are dynamically injected here by JS -->
+            </div>
+        </div>
+
+        <!-- Bottom Progress Dots -->
+        <div class="max-w-md mx-auto w-full flex items-center justify-center gap-1 mt-3 flex-wrap px-2" id="carousel-dots-group">
+            <!-- Dots dynamically injected by JS -->
+        </div>
+
+    </main>
+
+    <!-- Admin Dashboard View with Statistics (Hidden by default) -->
+    <main class="flex-grow container mx-auto px-4 py-6 max-w-5xl hidden" id="admin-view">
+        <div class="bg-white rounded-3xl p-6 shadow-md border border-gray-200 space-y-6">
+
+            <!-- Admin Header & Actions -->
+            <div class="flex items-center justify-between border-b pb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-black">لوحة تحكم المشرف والإحصائيات</h2>
+                    <p class="text-xs text-gray-500 mt-1 font-medium">تحليل النسب المئوية وإجمالي الردود لجميع الأسئلة الـ 23
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="exportCSV()"
+                        class="bg-[#00A3AD] hover:bg-[#008991] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-csv"></i>
+                        <span>تصدير CSV</span>
+                    </button>
+                    <button onclick="clearAllData()"
+                        class="bg-red-50 hover:bg-red-100 text-red-600 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>حذف الكل</span>
+                    </button>
+                    <button onclick="toggleAdminView()" class="btn-solid-dark px-4 py-2 text-xs">
+                        العودة للاستبيان
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Overview Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex items-center gap-4">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-black text-white flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500 font-bold">إجمالي المشاركين</div>
+                        <div id="stat-total-count" class="text-2xl font-bold text-black">0</div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex items-center gap-4">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-[#FFD100] text-black flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500 font-bold">عدد أسئلة الاستبيان</div>
+                        <div class="text-2xl font-bold text-black">23 سؤال</div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex items-center gap-4">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-[#10B981] text-white flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500 font-bold">أكثر صفة مشاركة</div>
+                        <div id="stat-top-role" class="text-xs font-bold text-black truncate max-w-[180px]">لا توجد بيانات</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Percentage Breakdown Section -->
+            <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100 space-y-4">
+                <h3 class="text-sm font-bold text-black flex items-center gap-2">
+                    <i class="fa-solid fa-chart-column text-[#00A3AD]"></i>
+                    <span>توزيع نسب الإجابات لجميع الأسئلة</span>
+                </h3>
+                <div id="percentage-breakdown-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Dynamic breakdown bars rendered here -->
+                </div>
+            </div>
+
+            <!-- Responses Table -->
+            <div>
+                <h3 class="text-sm font-bold text-black mb-3">سجل الردود التفصيلي</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse">
+                        <thead>
+                            <tr class="border-b bg-gray-50 text-xs font-bold text-gray-700">
+                                <th class="p-3">#</th>
+                                <th class="p-3">التاريخ والوقت</th>
+                                <th class="p-3">الاسم</th>
+                                <th class="p-3">صفة المشارك</th>
+                                <th class="p-3">أبرز المشكلات المقترحة (س22)</th>
+                                <th class="p-3">الخدمات الإضافية (س23)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body" class="text-xs text-gray-800 divide-y font-medium">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="no-data-msg" class="text-center py-8 text-gray-400 text-sm hidden font-bold">
+                    لا توجد أي ردود مخزنة حتى الآن.
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        const surveyQuestions = [
+    {
+        "id": "q1",
+        "section": "المحور الأول: هوية المشارك",
+        "title": "الجنس",
+        "type": "single",
+        "options": [
+            "ذكر",
+            "أنثى"
+        ],
+        "hasOther": false
+    },
+    {
+        "id": "q2",
+        "section": "المحور الأول: هوية المشارك",
+        "title": "الفئة العمرية",
+        "type": "single",
+        "options": [
+            "أقل من 18 سنة",
+            "18–25 سنة",
+            "26–35 سنة",
+            "36–45 سنة",
+            "أكثر من 45 سنة"
+        ],
+        "hasOther": false
+    },
+    {
+        "id": "q3",
+        "section": "المحور الأول: هوية المشارك",
+        "title": "صفة المشارك في الاستبيان",
+        "type": "single",
+        "options": [
+            "شخص يواجه تحديات أو يعتمد وسائل مساعدة.",
+            "فرد من أسرة / صديق مقرب لشخص يواجه تحديات حركية.",
+            "اختصاصي / مدرب (علاج طبيعي، أطراف صناعية، تأهيل).",
+            "مهتم بالتصميم الشامل (زائر / باحث)."
+        ],
+        "hasOther": false
+    },
+    {
+        "id": "q4",
+        "section": "المحور الأول: هوية المشارك",
+        "title": "نوع التحدي الحركي",
+        "type": "multi",
+        "options": [
+            "استخدام الكراسي المتحركة",
+            "استخدام الأطراف الصناعية",
+            "استخدام وسائل مساعدة أخرى (عكازات / مشّايات).",
+            "تحديات بصرية (جزئية / كليّة).",
+            "تحديات سمعية."
+        ],
+        "hasOther": true,
+        "otherLabel": "متعددة / أخرى (يرجى التحديد إن رغبت)"
+    },
+    {
+        "id": "q5",
+        "section": "الأنشطة الرياضية والأهداف",
+        "title": "ما طبيعة علاقتك بالأنشطة الرياضية؟",
+        "type": "multi",
+        "options": [
+            "شخص يمارس الرياضة",
+            "أحد أفراد أسرة شخص رياضي ذي إعاقة",
+            "مدرب أو مختص رياضي",
+            "مختص في التأهيل والعلاج الطبيعي",
+            "مهتم بالوصول الشامل"
+        ],
+        "hasOther": true,
+        "otherLabel": "أخرى"
+    },
+    {
+        "id": "q6",
+        "section": "الأنشطة الرياضية والأهداف",
+        "title": "ما الأهداف الرئيسية التي ترغب في تحقيقها من خلال ممارسة الرياضة؟",
+        "type": "multi",
+        "options": [
+            "تحسين اللياقة البدنية والصحة العامة",
+            "تنمية المهارات الحركية",
+            "الترفيه والتفاعل الاجتماعي",
+            "المشاركة في المنافسات الرياضية"
+        ],
+        "hasOther": true,
+        "otherLabel": "أهداف أخرى"
+    },
+    {
+        "id": "q7",
+        "section": "الأنشطة الرياضية والأهداف",
+        "title": "ما نوع الأنشطة الرياضية التي تفضلها؟",
+        "type": "multi_with_all",
+        "options": [
+            "أنشطة فردية",
+            "أنشطة جماعية",
+            "أنشطة تنافسية",
+            "أنشطة ترفيهية وغير تنافسية",
+            "جميع ما سبق"
+        ],
+        "hasOther": false
+    },
+    {
+        "id": "q8",
+        "section": "الوصول الشامل والتنقل",
+        "title": "ما مدى سهولة الوصول إلى المركز الرياضي بالنسبة إليك؟",
+        "type": "single",
+        "options": [
+            "سهلة جداً",
+            "سهلة",
+            "متوسطة",
+            "صعبة",
+            "صعبة جداً"
+        ],
+        "hasOther": false
+    },
+    {
+        "id": "q9",
+        "section": "الوصول الشامل والتنقل",
+        "title": "ما أكثر العوائق التي قد تواجه الأشخاص ذوي الإعاقة أثناء التنقل داخل المجمعات الرياضية؟",
+        "type": "multi",
+        "options": [
+            "عدم توفر المنحدرات",
+            "عدم توفر المصاعد",
+            "عدم وضوح المسارات",
+            "عدم ملاءمة دورات المياه"
+        ],
+        "hasOther": true,
+        "otherLabel": "أخرى"
+    },
+    {
+        "id": "q10",
+        "section": "التصميم المعماري والدمج",
+        "title": "هل تعتقد أن تصميم المرافق الرياضية يسمح للأشخاص ذوي الإعاقة بممارسة الأنشطة بشكل مستقل، دون الاعتماد الدائم على مساعدة الآخرين؟",
+        "type": "single",
+        "options": [
+            "نعم، بدرجة كبيرة",
+            "نعم، إلى حد ما",
+            "لا",
+            "غير متأكد"
+        ],
+        "hasOther": false
+    },
+    {
+        "id": "q11",
+        "section": "التصميم المعماري والدمج",
+        "title": "هل ترى ضرورة دمج الأشخاص ذوي الإعاقة في الأنشطة الرياضية الجماعية إلى جانب غير ذوي الإعاقة؟",
+        "type": "single",
+        "options": [
+            "نعم",
+            "لا",
+            "حسب طبيعة النشاط الرياضي"
+        ],
+        "hasOther": false
+    },
+    {
+        "id": "q12",
+        "section": "التصميم المعماري والدمج",
+        "title": "هل تعتقد أن التصميم المعماري للمجمع الرياضي يؤثر على شعور الأشخاص ذوي الإعاقة بالاستقلالية والاندماج الاجتماعي؟",
+        "type": "single",
+        "options": [
+            "نعم، بدرجة كبيرة",
+            "نعم، إلى حد ما",
+            "لا",
+            "غير متأكد"
+        ],
+        "hasOther": false
+    },
+    {
+        "id": "q13",
+        "section": "التصميم المعماري والدمج",
+        "title": "ما العوامل التي تعتقد أنها تساهم في جعل المجمع الرياضي أكثر راحة وشمولاً؟",
+        "type": "multi",
+        "options": [
+            "الخصوصية",
+            "سهولة الحركة والاستقلالية",
+            "وضوح التنظيم الداخلي",
+            "توفير مساحات اجتماعية مشتركة",
+            "مراعاة الاحتياجات الحسية والنفسية"
+        ],
+        "hasOther": false
+    },
+    {
+        "id": "q14",
+        "section": "التصميم المعماري والدمج",
+        "title": "من وجهة نظرك، ما مدى توفر مفهوم الوصول الشامل في المنشآت الرياضية الموجودة حالياً؟",
+        "type": "single",
+        "options": [
+            "متوفر بدرجة كبيرة",
+            "متوفر بدرجة متوسطة",
+            "متوفر بدرجة ضعيفة",
+            "غير متوفر",
+            "لا أستطيع التقييم"
+        ],
+        "hasOther": false
+    },
+    {
+        "id": "q15",
+        "section": "التصميم المعماري والدمج",
+        "title": "ما الأولوية التي ينبغي أن يركز عليها تصميم مجمع رياضي شامل؟",
+        "type": "multi",
+        "options": [
+            "سهولة الوصول والحركة",
+            "تنوع الأنشطة والمرافق الرياضية",
+            "الاستقلالية والاعتماد على الذات",
+            "الدمج الاجتماعي",
+            "التهيئة الحسية والإدراكية"
+        ],
+        "hasOther": false
+    },
+    {
+        "id": "q16",
+        "section": "التصميم المعماري والدمج",
+        "title": "هل تفضل ممارسة الأنشطة الرياضية والترفيهية في بيئة مشتركة مع الأشخاص من غير ذوي الإعاقة؟",
+        "type": "single",
+        "options": [
+            "نعم",
+            "لا",
+            "حسب نوع النشاط الرياضي",
+            "أفضل وجود خيارات للأنشطة المشتركة والمخصصة"
+        ],
+        "hasOther": false
+    },
+    {
+        "id": "q17",
+        "section": "الصعوبات والعلاج الطبيعي",
+        "title": "ما أبرز الصعوبات التي قد تمنعك من ممارسة الرياضة؟",
+        "type": "multi",
+        "options": [
+            "عدم توفر منشآت رياضية مهيأة",
+            "نقص المعدات والأجهزة الرياضية المناسبة",
+            "عدم وجود مدربين متخصصين",
+            "صعوبة الوصول إلى المنشآت الرياضية",
+            "ارتفاع التكاليف",
+            "نقص البرامج والأنشطة المناسبة",
+            "عدم توفر وسائل النقل"
+        ],
+        "hasOther": true,
+        "otherLabel": "أسباب أخرى"
+    },
+    {
+        "id": "q18",
+        "section": "الصعوبات والعلاج الطبيعي",
+        "title": "ما مدى أهمية توفير قسم مستقل للعلاج الطبيعي والتأهيل داخل المجمع الرياضي؟",
+        "type": "single",
+        "options": [
+            "مهم جداً",
+            "مهم",
+            "متوسط الأهمية",
+            "غير مهم"
+        ],
+        "hasOther": false
+    },
+    {
+        "id": "q19",
+        "section": "الصعوبات والعلاج الطبيعي",
+        "title": "ما العوامل التي تجعل بيئة العلاج الطبيعي أكثر راحة وفاعلية؟",
+        "type": "multi",
+        "options": [
+            "الخصوصية أثناء العلاج",
+            "الإضاءة الطبيعية",
+            "التهوية الجيدة",
+            "الهدوء وتقليل الضوضاء",
+            "توفر مساحة كافية للحركة",
+            "سهولة الوصول إلى الأجهزة والمعدات",
+            "وجود مناطق للراحة والانتظار",
+            "التواصل البصري مع المساحات الخارجية والطبيعة"
+        ],
+        "hasOther": false
+    },
+    {
+        "id": "q20",
+        "section": "الأنشطة والخدمات المتكاملة",
+        "title": "ما الأنشطة الترفيهية والاجتماعية التي ترغب في توفرها داخل المجمع الرياضي؟",
+        "type": "multi",
+        "options": [
+            "الأنشطة الفنية والإبداعية",
+            "الأنشطة الثقافية والتعليمية",
+            "الألعاب الجماعية والترفيهية",
+            "الحدائق والمساحات الخضراء",
+            "الأنشطة الخارجية",
+            "الفعاليات والمسابقات الرياضية",
+            "اللقاءات والأنشطة الاجتماعية",
+            "ورش العمل وتنمية المهارات"
+        ],
+        "hasOther": false
+    },
+    {
+        "id": "q21",
+        "section": "الأنشطة والخدمات المتكاملة",
+        "title": "ما الخدمات التي ترى ضرورة جمعها داخل مجمع رياضي واحد؟",
+        "type": "multi_with_all",
+        "options": [
+            "الرياضة التنافسية",
+            "الرياضة الترفيهية",
+            "العلاج الطبيعي والتأهيل",
+            "التقييم والفحص الحركي",
+            "الأنشطة الاجتماعية والثقافية",
+            "التوعية والتثقيف الصحي",
+            "جميع ما سبق"
+        ],
+        "hasOther": false
+    },
+    {
+        "id": "q22",
+        "section": "مقترحات التصميم",
+        "title": "ما أبرز المشكلات أو الصعوبات التي تعتقد أنه يجب معالجتها عند تصميم مجمع رياضي للأشخاص ذوي الإعاقة؟",
+        "type": "text",
+        "placeholder": "اكتب أبرز المشكلات أو الصعوبات التي تقترح معالجتها..."
+    },
+    {
+        "id": "q23",
+        "section": "مقترحات التصميم",
+        "title": "ما الخدمات أو الأنشطة الإضافية التي تتمنى توفرها في المجمع الرياضي المقترح؟",
+        "type": "text",
+        "placeholder": "اكتب الخدمات أو الأنشطة الإضافية التي تتمناها..."
+    }
+];
+        const DB_KEY = 'paralympic_survey_db_v1';
+
+        // Card 0 = Welcome/Name, Cards 1..23 = Questions, Card 24 = Completion
+        const totalCards = surveyQuestions.length + 2;
+        let activeCardIndex = 0;
+        let userName = "";
+        let userAnswers = {};
+        let autoAdvanceTimer = null;
+        let isAdminOpen = false;
+
+        function clearAutoAdvance() {
+            if (autoAdvanceTimer) {
+                clearTimeout(autoAdvanceTimer);
+                autoAdvanceTimer = null;
+            }
+        }
+
+        function isLightTheme(themeIdx) {
+            return themeIdx === 3 || themeIdx === 5;
+        }
+
+        function buildCards() {
+            const track = document.getElementById('carousel-track');
+            const dotsGroup = document.getElementById('carousel-dots-group');
+            track.innerHTML = '';
+            dotsGroup.innerHTML = '';
+
+            // 1. Intro Card (Index 0)
+            const introCard = document.createElement('div');
+            introCard.className = 'flashcard-item card-theme-0 is-active';
+            introCard.id = 'card-0';
+            introCard.onclick = () => handleCardClick(0);
+            introCard.innerHTML = `
+                <div class="flipper-box">
+                    <div class="card-surface text-center pt-7">
+                        <div class="space-y-2">
+                            <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">مقدمة الاستبيان</span>
+                            <h2 class="text-2xl md:text-3xl font-bold mt-2">مرحباً بك في الاستبيان</h2>
+                            <p class="text-sm md:text-base font-medium opacity-90">اكتب اسمك (اختياري) لنبدأ الأسئلة</p>
+                        </div>
+                        <div class="space-y-3 my-auto">
+                            <input type="text" id="name-input" placeholder="اكتب اسمك هنا (اختياري)..."
+                                class="w-full px-4 py-3.5 rounded-2xl bg-white text-black border-2 border-transparent focus:border-black text-center text-sm font-bold outline-none shadow-md"
+                                oninput="updateUserName(this.value)" />
+                        </div>
+                        <div class="space-y-2 pt-2">
+                            <button type="button" onclick="goToCard(1, event)"
+                                class="btn-solid-dark w-full py-3.5 text-sm flex items-center justify-center gap-2 shadow-md">
+                                <span>لنبدأ الأسئلة (23 سؤال)</span>
+                                <i class="fa-solid fa-arrow-left text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            track.appendChild(introCard);
+
+            // 2. Question Cards (Indices 1 to 23)
+            surveyQuestions.forEach((q, idx) => {
+                const cardIdx = idx + 1;
+                const themeIdx = cardIdx % 6;
+                const lightTextCard = !isLightTheme(themeIdx);
+                const badgeClass = lightTextCard ? 'bg-white text-black' : 'bg-black text-white';
+                const borderClass = lightTextCard ? 'border-white/20' : 'border-black/15';
+                const isLastQuestion = (idx === surveyQuestions.length - 1);
+
+                let bodyHTML = '';
+
+                if (q.type === 'text') {
+                    bodyHTML = `
+                        <div class="my-auto space-y-2">
+                            <textarea id="${q.id}-textarea" rows="5" placeholder="${q.placeholder || 'اكتب إجابتك هنا...'}"
+                                class="w-full p-3.5 rounded-2xl bg-white/95 text-black border-2 border-transparent focus:border-black text-xs md:text-sm font-medium outline-none shadow-md leading-relaxed"
+                                oninput="handleTextInput('${q.id}', this.value)"></textarea>
+                        </div>
+                    `;
+                } else {
+                    const isMulti = q.type === 'multi' || q.type === 'multi_with_all';
+                    const hintText = isMulti ? 'يمكنك اختيار أكثر من إجابة' : 'اختر إجابة واحدة';
+                    let optionsHTML = `<div class="text-[11px] font-bold opacity-80 mb-1.5">${hintText}</div>`;
+                    optionsHTML += `<div class="options-scroll-area space-y-2 my-auto">`;
+
+                    q.options.forEach((opt, optIdx) => {
+                        const iconClass = isMulti ? 'fa-regular fa-square' : 'fa-regular fa-circle';
+                        optionsHTML += `
+                            <button type="button" onclick="handleOptionSelect('${q.id}', ${optIdx}, event)"
+                                class="pebble-option p-2.5 px-3.5 text-xs md:text-sm flex items-center justify-between gap-2 font-medium"
+                                id="${q.id}-opt-${optIdx}">
+                                <span class="leading-snug">${opt}</span>
+                                <i class="${iconClass} opacity-70 shrink-0"></i>
+                            </button>
+                        `;
+                    });
+
+                    if (q.hasOther) {
+                        const otherBtnLabel = q.otherLabel || 'أخرى (اضغط للكتابة)';
+                        optionsHTML += `
+                            <div class="pt-0.5 space-y-2">
+                                <button type="button" onclick="toggleOtherOption('${q.id}', event)"
+                                    class="pebble-option p-2.5 px-3.5 text-xs md:text-sm flex items-center justify-between gap-2 font-bold"
+                                    id="${q.id}-other-btn">
+                                    <span class="flex items-center gap-1.5">
+                                        <i class="fa-solid fa-pen text-[11px]"></i>
+                                        <span>${otherBtnLabel}</span>
+                                    </span>
+                                    <i class="fa-regular fa-square opacity-70 shrink-0" id="${q.id}-other-icon"></i>
+                                </button>
+                                <div id="${q.id}-other-box" class="hidden" onclick="event.stopPropagation()">
+                                    <input type="text" id="${q.id}-other-input"
+                                        placeholder="اكتب إجابتك هنا..."
+                                        class="w-full px-3.5 py-2.5 rounded-xl bg-white text-black border-2 border-black text-xs font-bold outline-none shadow-sm"
+                                        oninput="updateOtherText('${q.id}', this.value)" />
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    optionsHTML += `</div>`;
+                    bodyHTML = optionsHTML;
+                }
+
+                const nextBtnHTML = isLastQuestion
+                    ? `<button type="button" onclick="submitSurvey(event)"
+                            class="btn-solid-dark px-5 py-2 text-xs flex items-center gap-1.5 shadow-sm">
+                            <span>إرسال وإنهاء</span>
+                            <i class="fa-solid fa-check text-xs"></i>
+                       </button>`
+                    : `<button type="button" onclick="goToCard(${cardIdx + 1}, event)"
+                            class="btn-solid-dark px-6 py-2 text-xs shadow-sm">التالي ➔</button>`;
+
+                const card = document.createElement('div');
+                card.className = `flashcard-item card-theme-${themeIdx} ${cardIdx === 1 ? 'is-next' : 'is-far-next'}`;
+                card.id = `card-${cardIdx}`;
+                card.onclick = () => handleCardClick(cardIdx);
+                card.innerHTML = `
+                    <div class="flipper-box">
+                        <div class="card-surface pt-6">
+                            <div>
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="${badgeClass} text-[11px] font-bold px-3 py-1 rounded-full shadow-sm">
+                                        سؤال ${cardIdx} من ${surveyQuestions.length}
+                                    </span>
+                                    <span class="text-[11px] font-bold opacity-80 truncate">${q.section}</span>
+                                </div>
+                                <h3 class="text-sm md:text-base font-bold mt-2.5 leading-snug">
+                                    ${q.title}
+                                </h3>
+                            </div>
+                            ${bodyHTML}
+                            <div class="flex items-center justify-between pt-2 border-t ${borderClass}">
+                                <button type="button" onclick="goToCard(${cardIdx - 1}, event)"
+                                    class="btn-solid-light px-4 py-2 text-xs shadow-sm">السابق</button>
+                                ${nextBtnHTML}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                track.appendChild(card);
+            });
+
+            // 3. Completion Card (Index 24)
+            const doneIdx = totalCards - 1;
+            const doneThemeIdx = doneIdx % 6;
+            const doneCard = document.createElement('div');
+            doneCard.className = `flashcard-item card-theme-${doneThemeIdx} is-far-next`;
+            doneCard.id = `card-${doneIdx}`;
+            doneCard.onclick = () => handleCardClick(doneIdx);
+            doneCard.innerHTML = `
+                <div class="flipper-box">
+                    <div class="card-surface text-center pt-7">
+                        <div class="my-auto space-y-3">
+                            <div
+                                class="w-16 h-16 mx-auto bg-white text-black rounded-full flex items-center justify-center text-3xl shadow-md">
+                                <i class="fa-solid fa-trophy"></i>
+                            </div>
+                            <h2 class="text-2xl font-bold">أحسنت! تم إرسال إجابتك</h2>
+                            <p class="text-sm font-medium opacity-90 leading-relaxed">
+                                شكراً لمشاركتك القيمة في هذا الاستبيان، مساهمتك تساعد في تطوير تصميم المجمع الرياضي الشامل.
+                            </p>
+                        </div>
+                        <button type="button" onclick="resetAllCards(event)"
+                            class="btn-solid-light w-full py-3.5 text-xs font-bold flex items-center justify-center gap-2 mt-auto shadow-md">
+                            <i class="fa-solid fa-rotate-right text-xs"></i>
+                            <span>تعبئة استبيان جديد</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            track.appendChild(doneCard);
+
+            // 4. Progress Dots
+            for (let i = 0; i < totalCards; i++) {
+                const dot = document.createElement('button');
+                dot.type = 'button';
+                dot.onclick = (e) => goToCard(i, e);
+                dot.className = i === 0 ? "h-1.5 w-5 rounded-full bg-black transition-all" : "h-1.5 w-1.5 rounded-full bg-gray-300 transition-all";
+                dotsGroup.appendChild(dot);
+            }
+        }
+
+        function updateCarousel() {
+            for (let i = 0; i < totalCards; i++) {
+                const card = document.getElementById(`card-${i}`);
+                if (!card) continue;
+                card.classList.remove('is-active', 'is-prev', 'is-next', 'is-far-prev', 'is-far-next');
+                const diff = i - activeCardIndex;
+                if (diff === 0) card.classList.add('is-active');
+                else if (diff === -1) card.classList.add('is-prev');
+                else if (diff === 1) card.classList.add('is-next');
+                else if (diff < -1) card.classList.add('is-far-prev');
+                else if (diff > 1) card.classList.add('is-far-next');
+            }
+
+            const progress = ((activeCardIndex + 1) / totalCards) * 100;
+            const progressBar = document.getElementById('carousel-progress-bar');
+            if (progressBar) progressBar.style.width = `${progress}%`;
+
+            const cardBadge = document.getElementById('card-counter-badge');
+            if (cardBadge) cardBadge.textContent = `البطاقة ${activeCardIndex + 1} من ${totalCards}`;
+
+            const dots = document.getElementById('carousel-dots-group')?.children;
+            if (dots) {
+                for (let i = 0; i < dots.length; i++) {
+                    dots[i].className = i === activeCardIndex
+                        ? "h-1.5 w-5 rounded-full bg-black transition-all"
+                        : "h-1.5 w-1.5 rounded-full bg-gray-300 transition-all";
+                }
+            }
+        }
+
+        function goToCard(index, event) {
+            if (event) event.stopPropagation();
+            clearAutoAdvance();
+            if (index < 0 || index >= totalCards) return;
+            activeCardIndex = index;
+            updateCarousel();
+        }
+
+        function handleCardClick(index) {
+            if (index !== activeCardIndex) goToCard(index);
+        }
+
+        function updateUserName(val) {
+            userName = val.trim();
+            const badge = document.getElementById('respondent-header-name');
+            if (badge) badge.textContent = userName ? `👤 ${userName}` : '';
+        }
+
+        function handleTextInput(qId, val) {
+            userAnswers[qId] = val;
+        }
+
+        function handleOptionSelect(qId, optIdx, event) {
+            if (event) event.stopPropagation();
+            clearAutoAdvance();
+
+            const q = surveyQuestions.find(item => item.id === qId);
+            if (!q) return;
+            const selectedText = q.options[optIdx];
+            const cardIdx = surveyQuestions.findIndex(item => item.id === qId) + 1;
+
+            if (q.type === 'single') {
+                userAnswers[qId] = selectedText;
+                q.options.forEach((_, idx) => {
+                    const btn = document.getElementById(`${qId}-opt-${idx}`);
+                    if (btn) {
+                        const active = idx === optIdx;
+                        btn.classList.toggle('selected', active);
+                        const icon = btn.querySelector('i');
+                        if (icon) icon.className = active ? 'fa-solid fa-circle-check text-black shrink-0' : 'fa-regular fa-circle opacity-70 shrink-0';
+                    }
+                });
+                // Auto-advance on single choice
+                autoAdvanceTimer = setTimeout(() => {
+                    if (activeCardIndex === cardIdx && cardIdx < totalCards - 1) {
+                        goToCard(cardIdx + 1);
+                    }
+                }, 280);
+            } else {
+                // Multi-select
+                if (!userAnswers[qId] || typeof userAnswers[qId] !== 'object') {
+                    userAnswers[qId] = { selected: [], otherText: '' };
+                }
+                let list = userAnswers[qId].selected;
+
+                if (q.type === 'multi_with_all') {
+                    const allLabel = "جميع ما سبق";
+                    if (selectedText === allLabel) {
+                        if (list.includes(allLabel)) {
+                            list = [];
+                        } else {
+                            list = [allLabel];
+                        }
+                    } else {
+                        list = list.filter(x => x !== allLabel);
+                        if (list.includes(selectedText)) {
+                            list = list.filter(x => x !== selectedText);
+                        } else {
+                            list.push(selectedText);
+                        }
+                    }
+                } else {
+                    if (list.includes(selectedText)) {
+                        list = list.filter(x => x !== selectedText);
+                    } else {
+                        list.push(selectedText);
+                    }
+                }
+
+                userAnswers[qId].selected = list;
+                q.options.forEach((opt, idx) => {
+                    const btn = document.getElementById(`${qId}-opt-${idx}`);
+                    if (btn) {
+                        const active = list.includes(opt);
+                        btn.classList.toggle('selected', active);
+                        const icon = btn.querySelector('i');
+                        if (icon) icon.className = active ? 'fa-solid fa-square-check text-black shrink-0' : 'fa-regular fa-square opacity-70 shrink-0';
+                    }
+                });
+            }
+        }
+
+        function toggleOtherOption(qId, event) {
+            if (event) event.stopPropagation();
+            clearAutoAdvance();
+
+            if (!userAnswers[qId] || typeof userAnswers[qId] !== 'object') {
+                userAnswers[qId] = { selected: [], otherText: '', otherActive: false };
+            }
+
+            const isCurrentlyActive = !!userAnswers[qId].otherActive;
+            const nextState = !isCurrentlyActive;
+            userAnswers[qId].otherActive = nextState;
+
+            const btn = document.getElementById(`${qId}-other-btn`);
+            const icon = document.getElementById(`${qId}-other-icon`);
+            const box = document.getElementById(`${qId}-other-box`);
+            const input = document.getElementById(`${qId}-other-input`);
+
+            if (btn) btn.classList.toggle('selected', nextState);
+            if (icon) icon.className = nextState ? 'fa-solid fa-square-check text-black shrink-0' : 'fa-regular fa-square opacity-70 shrink-0';
+
+            if (box) {
+                if (nextState) {
+                    box.classList.remove('hidden');
+                    if (input) setTimeout(() => input.focus(), 50);
+                } else {
+                    box.classList.add('hidden');
+                    userAnswers[qId].otherText = '';
+                    if (input) input.value = '';
+                }
+            }
+        }
+
+        function updateOtherText(qId, val) {
+            if (!userAnswers[qId] || typeof userAnswers[qId] !== 'object') {
+                userAnswers[qId] = { selected: [], otherText: '', otherActive: true };
+            }
+            userAnswers[qId].otherText = val;
+        }
+
+        function formatAnswerForStorage(q) {
+            const raw = userAnswers[q.id];
+            if (!raw) return 'غير مسجل';
+            if (q.type === 'single' || q.type === 'text') {
+                return raw.trim() ? raw.trim() : 'غير مسجل';
+            }
+            const items = Array.isArray(raw.selected) ? [...raw.selected] : [];
+            if (raw.otherActive && raw.otherText && raw.otherText.trim()) {
+                items.push(`أخرى: ${raw.otherText.trim()}`);
+            } else if (raw.otherActive) {
+                items.push('أخرى');
+            }
+            return items.length > 0 ? items : 'غير مسجل';
+        }
+
+        function submitSurvey(event) {
+            goToCard(totalCards - 1, event);
+
+            if (typeof confetti === 'function') {
+                confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 } });
+            }
+
+            const formattedAnswers = {};
+            surveyQuestions.forEach(q => {
+                formattedAnswers[q.id] = formatAnswerForStorage(q);
+            });
+
+            const newRecord = {
+                id: Date.now(),
+                timestamp: new Date().toLocaleString('ar-LY'),
+                name: userName || 'مشارك بدون اسم',
+                answers: formattedAnswers
+            };
+
+            let storedResponses = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+            storedResponses.push(newRecord);
+            localStorage.setItem(DB_KEY, JSON.stringify(storedResponses));
+        }
+
+        function resetAllCards(event) {
+            clearAutoAdvance();
+            activeCardIndex = 0;
+            userAnswers = {};
+            userName = "";
+            updateUserName("");
+            buildCards();
+            updateCarousel();
+        }
+
+        function toggleAdminView() {
+            isAdminOpen = !isAdminOpen;
+            const surveyView = document.getElementById('survey-view');
+            const adminView = document.getElementById('admin-view');
+            const toggleBtn = document.getElementById('admin-toggle-btn');
+            const appTitle = document.getElementById('app-title');
+
+            if (isAdminOpen) {
+                surveyView.classList.add('hidden');
+                adminView.classList.remove('hidden');
+                toggleBtn.innerHTML = '<i class="fa-solid fa-eye text-[10px]"></i><span>عرض الاستبيان</span>';
+                appTitle.textContent = 'لوحة التحكم الإدارية والإحصائيات';
+                renderAdminDashboard();
+            } else {
+                adminView.classList.add('hidden');
+                surveyView.classList.remove('hidden');
+                toggleBtn.innerHTML = '<i class="fa-solid fa-lock text-[10px]"></i><span>لوحة المشرف</span>';
+                appTitle.textContent = 'استبيان المجمع الرياضي الشامل';
+            }
+        }
+
+        function renderAdminDashboard() {
+            const storedResponses = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+            const totalCount = storedResponses.length;
+
+            document.getElementById('stat-total-count').textContent = totalCount;
+
+            // Top role (q3)
+            let roleCounts = {};
+            storedResponses.forEach(r => {
+                const role = r.answers?.q3;
+                if (role && role !== 'غير مسجل') {
+                    roleCounts[role] = (roleCounts[role] || 0) + 1;
+                }
+            });
+            let topRole = 'لا توجد بيانات';
+            let maxRole = 0;
+            for (let k in roleCounts) {
+                if (roleCounts[k] > maxRole) {
+                    maxRole = roleCounts[k];
+                    topRole = k;
+                }
+            }
+            document.getElementById('stat-top-role').textContent = topRole;
+
+            const breakdownContainer = document.getElementById('percentage-breakdown-container');
+            breakdownContainer.innerHTML = '';
+
+            if (totalCount === 0) {
+                breakdownContainer.innerHTML = '<div class="col-span-2 text-xs text-gray-400 text-center py-4 font-bold">لا توجد بيانات كافية لحساب النسب.</div>';
+            } else {
+                surveyQuestions.forEach((q, idx) => {
+                    if (q.type === 'text') return;
+
+                    let counts = {};
+                    q.options.forEach(opt => counts[opt] = 0);
+                    if (q.hasOther) counts['أخرى (مخصصة)'] = 0;
+
+                    storedResponses.forEach(r => {
+                        const ans = r.answers?.[q.id];
+                        if (!ans || ans === 'غير مسجل') return;
+                        if (Array.isArray(ans)) {
+                            ans.forEach(item => {
+                                if (item.startsWith('أخرى')) {
+                                    counts['أخرى (مخصصة)'] = (counts['أخرى (مخصصة)'] || 0) + 1;
+                                } else {
+                                    counts[item] = (counts[item] || 0) + 1;
+                                }
+                            });
+                        } else {
+                            counts[ans] = (counts[ans] || 0) + 1;
+                        }
+                    });
+
+                    let cardHtml = `<div class="bg-white p-4 rounded-xl border border-gray-200 space-y-2">
+                        <div class="text-xs font-bold text-black">${idx + 1}. ${q.title}</div>`;
+
+                    for (let k in counts) {
+                        const c = counts[k];
+                        const pct = totalCount > 0 ? Math.round((c / totalCount) * 100) : 0;
+                        cardHtml += `
+                            <div class="space-y-0.5">
+                                <div class="flex justify-between text-[11px] text-gray-700 font-medium">
+                                    <span class="truncate max-w-[75%]">${k}</span>
+                                    <span class="font-bold">${c} (${pct}%)</span>
+                                </div>
+                                <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                    <div class="bg-[#00A3AD] h-full rounded-full transition-all duration-300" style="width: ${pct}%"></div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    cardHtml += `</div>`;
+                    breakdownContainer.innerHTML += cardHtml;
+                });
+            }
+
+            const tbody = document.getElementById('admin-table-body');
+            const noDataMsg = document.getElementById('no-data-msg');
+
+            tbody.innerHTML = '';
+            if (totalCount === 0) {
+                noDataMsg.classList.remove('hidden');
+                return;
+            }
+            noDataMsg.classList.add('hidden');
+
+            storedResponses.forEach((rec, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 font-bold">${idx + 1}</td>
+                    <td class="p-3 text-gray-500 font-bold">${rec.timestamp}</td>
+                    <td class="p-3 font-bold text-black">${rec.name}</td>
+                    <td class="p-3">${rec.answers?.q3 || 'غير مسجل'}</td>
+                    <td class="p-3 text-gray-700">${rec.answers?.q22 || '—'}</td>
+                    <td class="p-3 text-gray-700">${rec.answers?.q23 || '—'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function exportCSV() {
+            const storedResponses = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+            if (storedResponses.length === 0) {
+                alert('لا توجد بيانات للتصدير.');
+                return;
+            }
+            const headers = ['الرقم', 'التاريخ والوقت', 'الاسم', ...surveyQuestions.map((q, i) => `س${i+1}: ${q.title}`)];
+            const rows = storedResponses.map((r, idx) => {
+                const cols = [
+                    idx + 1,
+                    `"${r.timestamp}"`,
+                    `"${r.name}"`,
+                    ...surveyQuestions.map(q => {
+                        const a = r.answers?.[q.id];
+                        const str = Array.isArray(a) ? a.join(' | ') : (a || '');
+                        return `"${String(str).replace(/"/g, '""')}"`;
+                    })
+                ];
+                return cols.join(',');
+            });
+            const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'نتائج_استبيان_المجمع_الرياضي.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function clearAllData() {
+            if (confirm('هل أنت متأكد من حذف جميع الردود المخزنة؟')) {
+                localStorage.removeItem(DB_KEY);
+                renderAdminDashboard();
+            }
+        }
+
+        // Touch swipe support for mobile/tablet
+        let touchStartX = 0;
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        document.addEventListener('touchend', e => {
+            if (isAdminOpen) return;
+            const touchEndX = e.changedTouches[0].screenX;
+            const diff = touchEndX - touchStartX;
+            // RTL swipe logic: swipe right goes to next card, swipe left goes to previous
+            if (Math.abs(diff) > 55) {
+                if (diff > 0 && activeCardIndex < totalCards - 1) {
+                    goToCard(activeCardIndex + 1);
+                } else if (diff < 0 && activeCardIndex > 0) {
+                    goToCard(activeCardIndex - 1);
+                }
+            }
+        }, { passive: true });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const startBtn = document.getElementById('startBtn');
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            if (startBtn && welcomeScreen) {
+                startBtn.addEventListener('click', function () {
+                    welcomeScreen.style.opacity = '0';
+                    welcomeScreen.style.visibility = 'hidden';
+                });
+            }
+            buildCards();
+            updateCarousel();
+        });
+    </script>
+</body>
+
+</html>
